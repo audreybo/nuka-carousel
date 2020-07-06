@@ -165,7 +165,7 @@ export const calcSomeInitialState = props => {
 };
 
 export const handleSelfFocus = e => {
-  if (e && e.currentTarget) {
-    e.currentTarget.focus();
-  }
+  // if (e && e.currentTarget) {
+  //   e.currentTarget.focus();
+  // }
 };
