@@ -25,7 +25,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 import React from 'react';
-import 'wicg-inert';
 import PropTypes from 'prop-types';
 import ExecutionEnvironment from 'exenv';
 import Animate from 'react-move/Animate';
@@ -33,9 +32,9 @@ import * as easing from 'd3-ease';
 import { PagingDots, PreviousButton, NextButton } from './default-controls';
 import Transitions from './all-transitions';
 import AnnounceSlide, { defaultRenderAnnounceSlideMessage } from './announce-slide';
-import { addAccessibility, addEvent, removeEvent, getPropsByTransitionMode, swipeDirection, shouldUpdate, calcSomeInitialState } from './utilities/utilities';
+import { addEvent, removeEvent, getPropsByTransitionMode, swipeDirection, shouldUpdate, calcSomeInitialState } from './utilities/utilities';
 import { getAlignmentOffset, getImgTagStyles, getDecoratorStyles, getSliderStyles, getFrameStyles, getTransitionProps } from './utilities/style-utilities';
-import { getValidChildren, calculateSlideHeight } from './utilities/bootstrapping-utilities';
+import { addAccessibility, getValidChildren, calculateSlideHeight } from './utilities/bootstrapping-utilities';
 
 var Carousel =
 /*#__PURE__*/
@@ -50,7 +49,7 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Carousel).apply(this, arguments));
     _this.displayName = 'Carousel';
     _this.clickDisabled = false;
-    _this.latestTransitioningIndex = null;
+    _this.isTransitioning = false;
     _this.timers = [];
     _this.touchObject = {};
     _this.controlsMap = [{
@@ -152,7 +151,7 @@ function (_React$Component) {
       var keyCodeConfig = _extends({}, this.keyCodeConfig, this.props.keyCodeConfig);
 
       this.keyCodeMap = this.getKeyCodeMap(keyCodeConfig);
-      this.getLockScrollEvents().lockTouchScroll();
+      this.getlockScrollEvents().lockTouchScroll();
       var heightCheckDelay = 200;
 
       var initializeHeight = function initializeHeight(delay) {
@@ -173,8 +172,44 @@ function (_React$Component) {
       };
 
       initializeHeight(heightCheckDelay);
-    } // eslint-disable-next-line complexity
+    } // @TODO Remove deprecated componentWillReceiveProps with getDerivedStateFromProps
+    // eslint-disable-next-line react/no-deprecated
+    // eslint-disable-next-line camelcase
 
+  }, {
+    key: "UNSAFE_componentWillReceiveProps",
+    value: function UNSAFE_componentWillReceiveProps(nextProps) {
+      var slideCount = getValidChildren(nextProps.children).length;
+      var slideCountChanged = slideCount !== this.state.slideCount;
+      this.setState(function (prevState) {
+        return {
+          slideCount: slideCount,
+          currentSlide: slideCountChanged ? nextProps.slideIndex : prevState.currentSlide
+        };
+      });
+
+      if (slideCount <= this.state.currentSlide) {
+        this.goToSlide(Math.max(slideCount - 1, 0), nextProps);
+      }
+
+      var updateDimensions = slideCountChanged || shouldUpdate(this.props, nextProps, ['cellSpacing', 'vertical', 'slideWidth', 'slideHeight', 'heightMode', 'slidesToScroll', 'slidesToShow', 'transitionMode', 'cellAlign', 'scrollMode']);
+
+      if (updateDimensions) {
+        this.setDimensions(nextProps);
+      }
+
+      if (this.props.slideIndex !== nextProps.slideIndex && nextProps.slideIndex !== this.state.currentSlide && !this.state.isWrappingAround) {
+        this.goToSlide(nextProps.slideIndex, this.props);
+      }
+
+      if (this.props.autoplay !== nextProps.autoplay) {
+        if (nextProps.autoplay) {
+          this.startAutoplay();
+        } else {
+          this.stopAutoplay();
+        }
+      }
+    }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
@@ -195,21 +230,6 @@ function (_React$Component) {
         }
       }
 
-      if (this.state.isWrappingAround) {
-        this.isWrapped = true;
-      }
-
-      var prevSlideCount = getValidChildren(prevProps.children).length;
-      var slideCount = getValidChildren(this.props.children).length;
-      var slideCountChanged = prevSlideCount !== slideCount;
-
-      if (slideCountChanged) {
-        this.setState({
-          slideCount: slideCount,
-          currentSlide: this.props.slideIndex
-        });
-      }
-
       var _this$calcSlideHeight = this.calcSlideHeightAndWidth(),
           slideHeight = _this$calcSlideHeight.slideHeight;
 
@@ -217,26 +237,6 @@ function (_React$Component) {
 
       if (this.mounted && heightMismatches) {
         this.setDimensions();
-      } else {
-        var updateDimensions = slideCountChanged || shouldUpdate(prevProps, this.props, ['cellSpacing', 'vertical', 'slideWidth', 'slideHeight', 'heightMode', 'slidesToScroll', 'slidesToShow', 'transitionMode', 'cellAlign']);
-
-        if (updateDimensions) {
-          this.setDimensions(this.props);
-        }
-      }
-
-      if (slideCountChanged && slideCount <= this.state.currentSlide) {
-        this.goToSlide(Math.max(slideCount - 1, 0), this.props);
-      } else if (prevProps.slideIndex !== this.props.slideIndex && this.props.slideIndex !== this.state.currentSlide && !this.state.isWrappingAround) {
-        this.goToSlide(this.props.slideIndex, this.props);
-      }
-
-      if (prevProps.autoplay !== this.props.autoplay) {
-        if (this.props.autoplay) {
-          this.startAutoplay();
-        } else {
-          this.stopAutoplay();
-        }
       }
     }
   }, {
@@ -252,7 +252,7 @@ function (_React$Component) {
         clearTimeout(this.timers[i]);
       }
 
-      this.getLockScrollEvents().unlockTouchScroll();
+      this.getlockScrollEvents().unlockTouchScroll();
     }
   }, {
     key: "establishChildNodesMutationObserver",
@@ -294,8 +294,8 @@ function (_React$Component) {
       }
     }
   }, {
-    key: "getLockScrollEvents",
-    value: function getLockScrollEvents() {
+    key: "getlockScrollEvents",
+    value: function getlockScrollEvents() {
       var _this4 = this;
 
       var blockEvent = function blockEvent(e) {
@@ -404,9 +404,8 @@ function (_React$Component) {
         onMouseOver: this.handleMouseOver,
         onMouseOut: this.handleMouseOut,
         onMouseDown: function onMouseDown(e) {
-          console.log('ploppe');
-
-          if (e.preventDefault) {// e.preventDefault();
+          if (e.preventDefault) {// COMMENTED TO ALLOW FOCUS ON INPUTS IN CAROUSEL
+            // e.preventDefault();
           }
 
           _this6.touchObject = {
@@ -541,8 +540,7 @@ function (_React$Component) {
         slidesToShow = this.state.slidesToScroll;
       }
 
-      var touchLength = this.touchObject.length || 0; // touchLength must be longer than 1/5 the slideWidth / slidesToShow
-      // for swiping to be initiated
+      var touchLength = this.touchObject.length || 0;
 
       if (touchLength > this.state.slideWidth / slidesToShow / 5) {
         if (this.touchObject.direction === 1) {
@@ -746,15 +744,20 @@ function (_React$Component) {
         props = this.props;
       }
 
-      this.latestTransitioningIndex = index;
+      if (this.isTransitioning) {
+        return;
+      }
+
       this.setState({
         hasInteraction: true,
         easing: easing[props.easing]
       });
+      this.isTransitioning = true;
       var previousSlide = this.state.currentSlide;
 
       if (index >= this.state.slideCount || index < 0) {
         if (!props.wrapAround) {
+          this.isTransitioning = false;
           return;
         }
 
@@ -770,12 +773,12 @@ function (_React$Component) {
             };
           }, function () {
             _this8.timers.push(setTimeout(function () {
-              if (index === _this8.latestTransitioningIndex) {
-                _this8.resetAutoplay();
+              _this8.resetAutoplay();
 
-                if (index !== previousSlide) {
-                  _this8.props.afterSlide(0);
-                }
+              _this8.isTransitioning = false;
+
+              if (index !== previousSlide) {
+                _this8.props.afterSlide(0);
               }
             }, props.speed));
           });
@@ -793,12 +796,12 @@ function (_React$Component) {
             };
           }, function () {
             _this8.timers.push(setTimeout(function () {
-              if (index === _this8.latestTransitioningIndex) {
-                _this8.resetAutoplay();
+              _this8.resetAutoplay();
 
-                if (index !== previousSlide) {
-                  _this8.props.afterSlide(_this8.state.slideCount - 1);
-                }
+              _this8.isTransitioning = false;
+
+              if (index !== previousSlide) {
+                _this8.props.afterSlide(_this8.state.slideCount - 1);
               }
             }, props.speed));
           });
@@ -810,13 +813,13 @@ function (_React$Component) {
       this.setState({
         currentSlide: index
       }, function () {
-        _this8.timers.push(setTimeout(function () {
-          if (index === _this8.latestTransitioningIndex) {
-            _this8.resetAutoplay();
+        return _this8.timers.push(setTimeout(function () {
+          _this8.resetAutoplay();
 
-            if (index !== previousSlide) {
-              _this8.props.afterSlide(index);
-            }
+          _this8.isTransitioning = false;
+
+          if (index !== previousSlide) {
+            _this8.props.afterSlide(index);
           }
         }, props.speed));
       });
@@ -959,8 +962,7 @@ function (_React$Component) {
           slideHeight = _this$calcSlideHeight2.slideHeight,
           slideWidth = _this$calcSlideHeight2.slideWidth;
 
-      if (slideHeight !== this.state.slideHeight || slideWidth !== this.state.slideWidth || this.isWrapped) {
-        this.isWrapped = false;
+      if (slideHeight !== this.state.slideHeight || slideWidth !== this.state.slideWidth) {
         this.setState({
           slideHeight: slideHeight,
           slideWidth: slideWidth

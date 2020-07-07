@@ -19,7 +19,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 import React from 'react';
 import PropTypes from 'prop-types';
 import { getSlideHeight } from '../utilities/style-utilities';
-import { handleSelfFocus, getSlideClassName } from '../utilities/utilities';
+import { handleSelfFocus } from '../utilities/utilities';
 
 var FadeTransition =
 /*#__PURE__*/
@@ -45,8 +45,9 @@ function (_React$Component) {
           currentSlide = _this$props.currentSlide,
           slidesToShow = _this$props.slidesToShow;
       return React.Children.map(children, function (child, index) {
+        var visible = index >= currentSlide && index < currentSlide + slidesToShow;
         return React.createElement("li", {
-          className: "slider-slide".concat(getSlideClassName(index, currentSlide, slidesToShow)),
+          className: "slider-slide".concat(visible ? ' slide-visible' : ''),
           style: _this2.getSlideStyles(index, opacity),
           key: index,
           onClick: handleSelfFocus,

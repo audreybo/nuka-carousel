@@ -1,4 +1,24 @@
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 import React from 'react';
+export var addAccessibility = function addAccessibility(children, slidesToShow) {
+  if (slidesToShow > 1) {
+    return React.Children.map(children, function (child) {
+      return React.cloneElement(child, child.props);
+    });
+  } else {
+    // when slidesToshow is 1
+    return React.Children.map(children, function (child) {
+      return React.cloneElement(child, child.props);
+    });
+  }
+};
 export var getValidChildren = function getValidChildren(children) {
   // .toArray automatically removes invalid React children
   return React.Children.toArray(children);
@@ -14,13 +34,13 @@ var getHeightOfSlide = function getHeightOfSlide(slide) {
   }
 
   if (slide.children && slide.children.length > 0) {
-    var totalHeight = 0;
+    // Need to convert slide.children from HTMLCollection
+    // to an array
+    var children = _toConsumableArray(slide.children);
 
-    for (var i = 0; i < slide.children.length; ++i) {
-      totalHeight += slide.children[i].offsetHeight;
-    }
-
-    return totalHeight;
+    return children.reduce(function (totalHeight, child) {
+      return totalHeight + child.offsetHeight;
+    }, 0);
   } else {
     return slide.offsetHeight;
   }

@@ -1,7 +1,5 @@
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -21,7 +19,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 import React from 'react';
 import PropTypes from 'prop-types';
 import { getSlideHeight, getAlignmentOffset } from '../utilities/style-utilities';
-import { getSlideDirection, handleSelfFocus, getSlideClassName, isFullyVisible } from '../utilities/utilities';
+import { getSlideDirection, handleSelfFocus } from '../utilities/utilities';
 var MIN_ZOOM_SCALE = 0;
 var MAX_ZOOM_SCALE = 1;
 
@@ -103,17 +101,14 @@ function (_React$Component) {
           vertical = _this$props.vertical;
       var positionValue = vertical ? top : left;
       return React.Children.map(children, function (child, index) {
-        var isVisible = isFullyVisible(index, _this2.props);
-        var inert = isVisible ? {} : {
-          inert: 'true'
-        };
-        return React.createElement("li", _extends({
-          className: "slider-slide".concat(getSlideClassName(index, currentSlide, slidesToShow)),
+        var visible = index >= currentSlide && index < currentSlide + slidesToShow;
+        return React.createElement("li", {
+          className: "slider-slide".concat(visible ? ' slide-visible' : ''),
           style: _this2.getSlideStyles(index, positionValue),
           key: index,
           onClick: handleSelfFocus,
           tabIndex: -1
-        }, inert), child);
+        }, child);
       });
     }
   }, {

@@ -5,7 +5,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 import React from 'react';
-import { getAlignmentOffset } from './style-utilities';
 export var addEvent = function addEvent(elem, type, eventHandle) {
   if (elem === null || typeof elem === 'undefined') {
     return;
@@ -60,21 +59,6 @@ export var addAccessibility = function addAccessibility(children, slidesToShow, 
       return React.cloneElement(child, _objectSpread({}, child.props, {}, ariaProps));
     });
   }
-};
-export var getSlideClassName = function getSlideClassName(index, currentSlide, slidesToShow) {
-  var className = '';
-  var visible = index >= currentSlide && index < currentSlide + slidesToShow;
-  var current = index === currentSlide;
-
-  if (visible) {
-    className = ' slide-visible';
-
-    if (current) {
-      className = className.concat(' slide-current');
-    }
-  }
-
-  return className;
 };
 export var getPropsByTransitionMode = function getPropsByTransitionMode(props, keys) {
   var slidesToShow = props.slidesToShow,
@@ -185,36 +169,7 @@ export var calcSomeInitialState = function calcSomeInitialState(props) {
   };
 };
 export var handleSelfFocus = function handleSelfFocus(e) {
-  console.log('heyy');
-
-  if (e && e.currentTarget) {// e.currentTarget.focus();
+  if (e && e.currentTarget) {// COMMENTED TO ALLOW FOCUS ON INPUTS IN CAROUSEL
+    // e.currentTarget.focus();
   }
-};
-export var isFullyVisible = function isFullyVisible(slideIndex, config) {
-  var currentSlide = config.currentSlide,
-      cellSpacing = config.cellSpacing,
-      slideCount = config.slideCount,
-      slideWidth = config.slideWidth,
-      frameWidth = config.frameWidth,
-      wrapAround = config.wrapAround; // Slide width can't be 0
-
-  var fullSlideWidth = slideWidth || 1; // Calculate offset without cellSpacing
-
-  var offsetWidth = getAlignmentOffset(currentSlide, config) + cellSpacing * currentSlide;
-  var remainingWidth = frameWidth - offsetWidth;
-  var fullSlidesBefore = Math.max(Math.floor(offsetWidth / fullSlideWidth), 0);
-  var fullSlidesAfter = Math.max(Math.floor(remainingWidth / fullSlideWidth) - 1, 0);
-  var currentSlideIndex = Math.ceil(currentSlide);
-  var fullyVisibleSlides = [];
-
-  for (var i = currentSlideIndex - fullSlidesBefore; i < currentSlideIndex + fullSlidesAfter + 1; i++) {
-    if (i < 0) {
-      // -1 won't match a slide index
-      fullyVisibleSlides.push(wrapAround ? slideCount + i : -1);
-    } else {
-      fullyVisibleSlides.push(i > slideCount - 1 ? i - slideCount : i);
-    }
-  }
-
-  return fullyVisibleSlides.includes(slideIndex);
 };
