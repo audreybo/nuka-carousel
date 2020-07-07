@@ -398,7 +398,8 @@ export default class Carousel extends React.Component {
       onMouseOut: this.handleMouseOut,
       onMouseDown: e => {
         if (e.preventDefault) {
-          e.preventDefault();
+          // COMMENTED TO ALLOW FOCUS ON INPUTS IN CAROUSEL
+          // e.preventDefault();
         }
 
         this.touchObject = {
